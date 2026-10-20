@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colours sampled from PhotoPrism's own dark theme so Scry's screens match the web app. -->
+    <color name="scry_bg">#19191A</color>
+    <color name="scry_surface">#262628</color>
+    <color name="scry_text">#FFFFFF</color>
+    <color name="scry_text_secondary">#9A9B9D</color>
+    <!-- Brighter purple for text, focus rings and switches: the filled button purple is too dark to read on the background. -->
+    <color name="scry_accent_light">#B39DDB</color>
+
+    <style name="Theme.Scry" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/scry_bg</item>
+        <item name="android:colorBackground">@color/scry_bg</item>
+        <item name="android:colorPrimary">@color/scry_bg</item>
+        <item name="android:colorAccent">@color/scry_accent_light</item>
+        <item name="android:colorControlActivated">@color/scry_accent_light</item>
+        <item name="android:textColorPrimary">@color/scry_text</item>
+        <item name="android:textColorSecondary">@color/scry_text_secondary</item>
+        <item name="android:textColorHint">@color/scry_text_secondary</item>
+        <item name="android:statusBarColor">@color/scry_bg</item>
+        <item name="android:navigationBarColor">@color/scry_bg</item>
+        <item name="android:alertDialogTheme">@style/Theme.Scry.Dialog</item>
+        <item name="android:datePickerDialogTheme">@style/Theme.Scry.Dialog</item>
+    </style>
+
+    <style name="Theme.Scry.Dialog" parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:colorBackground">@color/scry_surface</item>
+        <item name="android:colorAccent">@color/scry_accent_light</item>
+        <item name="android:colorControlActivated">@color/scry_accent_light</item>
+    </style>
+</resources>

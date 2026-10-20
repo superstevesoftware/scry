@@ -1,0 +1,32 @@
+# Build output and tooling
+android/.gradle/
+android/.kotlin/
+android/.idea/
+android/**/build/
+android/libs/
+*.iml
+.gradle/
+.idea/
+captures/
+*.hprof
+
+# Machine-specific settings and secrets: never commit these
+local.properties
+*.keystore
+*.jks
+*.pem
+*.key
+.env
+.env.*
+*.log
+*.apk
+*.aab
+
+# Private working notes and tooling state (not part of the project)
+.notes/
+.claude/
+scratch/
+
+# Operating system files
+.DS_Store
+Thumbs.db
