@@ -30,3 +30,6 @@ scratch/
 # Operating system files
 .DS_Store
 Thumbs.db
+
+# Design exports and archives (keep the originals elsewhere; commit only final assets)
+*.zip

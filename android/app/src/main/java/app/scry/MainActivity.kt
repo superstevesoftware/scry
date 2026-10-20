@@ -7,6 +7,8 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.graphics.Color
 import android.os.Build
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -119,7 +121,7 @@ class MainActivity : Activity() {
                     store.remove(SecretStore.VPN_PENDING)
                     store.remove(SecretStore.VPN_PREV)
                 }
-                runOnUiThread { if (!loaded) loadApp() else statusPanel.visibility = View.GONE }
+                runOnUiThread { if (!loaded) loadApp() else { statusPanel.visibility = View.GONE; updateBackHandling() } }
             } catch (e: Exception) {
                 Log.w(TAG, "connect failed", e)
                 runOnUiThread { showError(e.message ?: e.toString()) }
@@ -163,6 +165,7 @@ class MainActivity : Activity() {
         loaded = true
         pageStarted = false
         statusPanel.visibility = View.GONE
+        updateBackHandling()
         web.loadUrl("http://127.0.0.1:$port/__scry/bootstrap?s=$secret")
         // A navigation can occasionally be dropped in a freshly started WebView, which
         // leaves a blank page. If nothing has started shortly, retry with a new secret.
@@ -193,6 +196,10 @@ class MainActivity : Activity() {
                 override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
                     pageStarted = true
                     Log.i(TAG, "page started ${url.substringBefore('?')}")
+                }
+
+                override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
+                    updateBackHandling() // the page just moved, so whether "back" has somewhere to go may have changed
                 }
 
                 override fun onPageFinished(view: WebView, url: String) {
@@ -398,6 +405,7 @@ class MainActivity : Activity() {
 
     private fun showStatus(msg: String) {
         statusPanel.visibility = View.VISIBLE
+        updateBackHandling()
         statusText.text = msg
         retry.visibility = View.GONE
         edit.visibility = View.GONE
@@ -423,9 +431,43 @@ class MainActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    // ---------------------------------------------------------------- back button and back gesture
+
+    /** True when "back" should step through the page's own history, like a browser, instead of leaving the app. */
+    private fun canGoBackInPage(): Boolean {
+        if (statusPanel.visibility == View.VISIBLE) return false // connecting, or showing an error: back leaves
+        val history = web.copyBackForwardList()
+        if (history.currentIndex <= 0) return false
+        // Never step back onto the internal hop that signed the web view in.
+        return history.getItemAtIndex(history.currentIndex - 1).url?.contains("/__scry/bootstrap") != true
+    }
+
+    private var backCallback: OnBackInvokedCallback? = null
+
+    /**
+     * Android 13 and later send the back gesture and the back button to a registered callback, and
+     * newer versions no longer call the older onBackPressed at all, which is how back came to close
+     * the app. The manifest opts in to callbacks (enableOnBackInvokedCallback), and this one is
+     * registered only while the page has history to go back through; otherwise the system's own
+     * back behaviour runs, which leaves the app, as a browser would on its first page.
+     */
+    private fun updateBackHandling() {
+        if (Build.VERSION.SDK_INT < 33) return
+        val want = canGoBackInPage()
+        if (want && backCallback == null) {
+            val callback = OnBackInvokedCallback { if (canGoBackInPage()) web.goBack() }
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callback)
+            backCallback = callback
+        } else if (!want && backCallback != null) {
+            onBackInvokedDispatcher.unregisterOnBackInvokedCallback(backCallback!!)
+            backCallback = null
+        }
+    }
+
+    /** Android 12 and earlier. */
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (statusPanel.visibility != View.VISIBLE && web.canGoBack()) web.goBack() else super.onBackPressed()
+        if (canGoBackInPage()) web.goBack() else super.onBackPressed()
     }
 
     companion object {
