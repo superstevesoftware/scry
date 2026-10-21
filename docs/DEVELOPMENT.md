@@ -26,7 +26,7 @@ docs/       the user guide and this guide
 
 ## Prerequisites
 
-- **Android Studio** (for the JDK and the SDK), with the Android SDK **platform 35** and **NDK** (r27 or newer; tested with 30).
+- **Android Studio** (for the JDK and the SDK), with the Android SDK **platform 36** and **NDK** (r27 or newer; tested with 30).
 - **Go** (see `core/go.mod` for the version) and **gomobile**:
   ```
   go install golang.org/x/mobile/cmd/gomobile@latest
@@ -60,6 +60,34 @@ cd android && ./gradlew :app:testDebugUnitTest
 The Go tests cover config parsing, the proxy (host checks, cookies, Range, WebSockets, rewriting), the lease logic and identity checks. The Android unit tests cover the backup progress tracker, batching and the multipart body.
 
 Debug builds log proxy requests (paths and status codes only, never queries, headers or secrets) under the tags `Scry` and `GoLog`, and turn on the WireGuard and Tailscale engines' own logging. Release builds do not.
+
+## Release builds
+
+Releases are signed with keys that are **never** in the repository. Create one keystore with two keys (the Play upload key and the key for the APKs on GitHub) and keep a copy somewhere safe: if it is lost, you cannot update the app.
+
+```
+keytool -genkeypair -keystore scry-release.p12 -storetype PKCS12 -alias upload -keyalg RSA -keysize 4096 -validity 10000
+keytool -genkeypair -keystore scry-release.p12 -storetype PKCS12 -alias github -keyalg RSA -keysize 4096 -validity 10000
+```
+
+Use the same password for the store and both keys, and put it in a properties file outside the repository:
+
+```
+storeFile=C:/path/to/scry-release.p12
+storePassword=...
+keyPassword=...
+```
+
+Point `SCRY_KEYSTORE_PROPERTIES` at that file (or save it as `android/keystore.properties`, which is git-ignored). Then, after rebuilding the core stripped (`gomobile bind ... -trimpath -ldflags="-s -w"`):
+
+```
+cd android
+./gradlew :app:lintRelease :app:testDebugUnitTest
+./gradlew -PscryKey=github :app:assembleRelease   # one APK per CPU type: app/build/outputs/apk/release/
+./gradlew -PscryKey=upload :app:bundleRelease     # for Google Play: app/build/outputs/bundle/release/app-release.aab
+```
+
+Before a release, raise `versionCode` (Play needs it to grow every upload) and `versionName` in `android/app/build.gradle.kts`. Publish SHA-256 checksums next to the APKs (`sha256sum`). Two keys, because Google re-signs what is uploaded to Play with its own key, so Play and GitHub installs are not interchangeable anyway.
 
 ## Licences
 

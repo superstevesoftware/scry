@@ -13,6 +13,8 @@ captures/
 # Machine-specific settings and secrets: never commit these
 local.properties
 *.keystore
+*.p12
+keystore.properties
 *.jks
 *.pem
 *.key
@@ -33,3 +35,5 @@ Thumbs.db
 
 # Design exports and archives (keep the originals elsewhere; commit only final assets)
 *.zip
+# Release artifacts (built locally, attached to GitHub releases, never committed)
+dist/
