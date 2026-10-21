@@ -251,9 +251,7 @@ class DownloadWorker(private val ctx: Context, params: WorkerParameters) : Worke
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setProgress(100, percent.coerceAtLeast(0), percent < 0)
-        return if (Build.VERSION.SDK_INT >= 29)
-            ForegroundInfo(noteId, b.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
-        else ForegroundInfo(noteId, b.build())
+        return ForegroundInfo(noteId, b.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
     }
 
     private fun notifyDone(noteId: Int, name: String, mime: String, uri: Uri) {

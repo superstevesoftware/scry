@@ -297,21 +297,10 @@ class MainActivity : Activity() {
             // keyboard so PhotoPrism's top-left menu stays usable; the splash fills the screen and only
             // moves its content clear of them.
             setOnApplyWindowInsetsListener { _, insets ->
-                val l: Int; val t: Int; val r: Int; val b: Int
-                if (android.os.Build.VERSION.SDK_INT >= 30) {
-                    val i = insets.getInsets(
-                        android.view.WindowInsets.Type.systemBars() or android.view.WindowInsets.Type.ime()
-                    )
-                    l = i.left; t = i.top; r = i.right; b = i.bottom
-                } else {
-                    @Suppress("DEPRECATION")
-                    l = insets.systemWindowInsetLeft; t = insets.systemWindowInsetTop
-                    @Suppress("DEPRECATION")
-                    r = insets.systemWindowInsetRight; b = insets.systemWindowInsetBottom
-                }
-                webHolder.setPadding(l, t, r, b)
-                splash.applyInsets(l, t, r, b)
-                android.view.WindowInsets.CONSUMED
+                val e = EdgeInsets.read(insets, ime = true)
+                webHolder.setPadding(e.left, e.top, e.right, e.bottom)
+                splash.applyInsets(e.left, e.top, e.right, e.bottom)
+                EdgeInsets.consumed(insets)
             }
         })
         applyBarColor(barColor)

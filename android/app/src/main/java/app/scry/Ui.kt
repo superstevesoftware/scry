@@ -230,3 +230,26 @@ class Ui(val ctx: Context) {
         val BAD = Color.parseColor("#FF8A80")
     }
 }
+
+/**
+ * System-bar insets that also work on Android 10. WindowInsets.getInsets and WindowInsets.Type
+ * only exist from Android 11, and calling them on Android 10 would crash the screen.
+ */
+object EdgeInsets {
+    class Edges(val left: Int, val top: Int, val right: Int, val bottom: Int)
+
+    /** The space taken by the status bar, navigation bar and, if [ime] is true, the keyboard. */
+    fun read(insets: android.view.WindowInsets, ime: Boolean): Edges =
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            val mask = android.view.WindowInsets.Type.systemBars() or (if (ime) android.view.WindowInsets.Type.ime() else 0)
+            val i = insets.getInsets(mask)
+            Edges(i.left, i.top, i.right, i.bottom)
+        } else {
+            @Suppress("DEPRECATION")
+            Edges(insets.systemWindowInsetLeft, insets.systemWindowInsetTop, insets.systemWindowInsetRight, insets.systemWindowInsetBottom)
+        }
+
+    fun consumed(insets: android.view.WindowInsets): android.view.WindowInsets =
+        if (android.os.Build.VERSION.SDK_INT >= 30) android.view.WindowInsets.CONSUMED
+        else @Suppress("DEPRECATION") insets.consumeSystemWindowInsets()
+}

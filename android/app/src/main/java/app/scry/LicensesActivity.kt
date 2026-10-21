@@ -29,9 +29,9 @@ class LicensesActivity : Activity() {
             addView(text)
             // Edge-to-edge on targetSdk 35: keep the text clear of the system bars.
             setOnApplyWindowInsetsListener { v, insets ->
-                val i = insets.getInsets(WindowInsets.Type.systemBars())
+                val i = EdgeInsets.read(insets, ime = false)
                 v.setPadding(i.left, i.top, i.right, i.bottom)
-                WindowInsets.CONSUMED
+                EdgeInsets.consumed(insets)
             }
         })
         // The file is about 120 KB, so read it off the main thread.

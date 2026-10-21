@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: the system's own start-up splash shows the app icon on this dark purple, matching the in-app splash. -->
+    <style name="Theme.Scry" parent="Theme.Scry.Base">
+        <item name="android:windowSplashScreenBackground">@color/scry_splash_window</item>
+    </style>
+</resources>

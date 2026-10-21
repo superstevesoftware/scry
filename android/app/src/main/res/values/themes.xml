@@ -8,7 +8,7 @@
     <!-- Brighter purple for text, focus rings and switches: the filled button purple is too dark to read on the background. -->
     <color name="scry_accent_light">#B39DDB</color>
 
-    <style name="Theme.Scry" parent="android:Theme.Material.NoActionBar">
+    <style name="Theme.Scry.Base" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/scry_bg</item>
         <item name="android:colorBackground">@color/scry_bg</item>
         <item name="android:colorPrimary">@color/scry_bg</item>
@@ -19,11 +19,12 @@
         <item name="android:textColorHint">@color/scry_text_secondary</item>
         <item name="android:statusBarColor">@color/scry_bg</item>
         <item name="android:navigationBarColor">@color/scry_bg</item>
-        <!-- Android 12+: the system's own start-up splash shows the app icon on this dark purple, matching the in-app one. -->
-        <item name="android:windowSplashScreenBackground">@color/scry_splash_window</item>
         <item name="android:alertDialogTheme">@style/Theme.Scry.Dialog</item>
         <item name="android:datePickerDialogTheme">@style/Theme.Scry.Dialog</item>
     </style>
+
+    <!-- The app theme. Android 12 and later add the system splash colour (see values-v31). -->
+    <style name="Theme.Scry" parent="Theme.Scry.Base" />
 
     <style name="Theme.Scry.Dialog" parent="android:Theme.Material.Dialog.Alert">
         <item name="android:colorBackground">@color/scry_surface</item>

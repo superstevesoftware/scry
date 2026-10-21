@@ -27,6 +27,7 @@ object Links {
     val USER_GUIDE: String? get() = REPO?.let { "$it/blob/main/docs/USER_GUIDE.md" }
 
     /** The part of the guide about backing up photos. */
+    val PRIVACY: String? get() = REPO?.let { "$it/blob/main/docs/PRIVACY.md" }
     val BACKUP_GUIDE: String? get() = USER_GUIDE?.let { "$it#back-up-your-photos" }
 
     /**

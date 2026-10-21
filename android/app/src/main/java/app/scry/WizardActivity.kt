@@ -74,7 +74,7 @@ class WizardActivity : Activity() {
             val splash = SplashPanel(this, ui).apply {
                 status.text = "Welcome"
                 setOnApplyWindowInsetsListener { _, insets ->
-                    val i = insets.getInsets(WindowInsets.Type.systemBars())
+                    val i = EdgeInsets.read(insets, ime = false)
                     applyInsets(i.left, i.top, i.right, i.bottom)
                     insets
                 }
@@ -98,9 +98,9 @@ class WizardActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(Ui.BG)
             setOnApplyWindowInsetsListener { v, insets ->
-                val i = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.ime())
+                val i = EdgeInsets.read(insets, ime = true)
                 v.setPadding(i.left, i.top, i.right, i.bottom)
-                WindowInsets.CONSUMED
+                EdgeInsets.consumed(insets)
             }
         }
         progress = TextView(this).apply {

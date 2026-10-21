@@ -106,9 +106,9 @@ class BackupHelpActivity : Activity() {
             setBackgroundColor(Ui.BG)
             addView(scroll, LinearLayout.LayoutParams(-1, -1))
             setOnApplyWindowInsetsListener { v, insets ->
-                val i = insets.getInsets(WindowInsets.Type.systemBars())
+                val i = EdgeInsets.read(insets, ime = false)
                 v.setPadding(i.left, i.top, i.right, i.bottom)
-                WindowInsets.CONSUMED
+                EdgeInsets.consumed(insets)
             }
         })
     }

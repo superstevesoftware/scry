@@ -122,9 +122,9 @@ class SettingsActivity : Activity() {
             setBackgroundColor(Ui.BG)
             // Edge-to-edge on targetSdk 35: keep everything clear of the system bars and the keyboard.
             setOnApplyWindowInsetsListener { v, insets ->
-                val i = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.ime())
+                val i = EdgeInsets.read(insets, ime = true)
                 v.setPadding(i.left, i.top, i.right, i.bottom)
-                WindowInsets.CONSUMED
+                EdgeInsets.consumed(insets)
             }
         }
         root.addView(TextView(this).apply {
@@ -336,6 +336,9 @@ class SettingsActivity : Activity() {
         val help = ui.card(page, "Help and source code")
         Links.USER_GUIDE?.let { guide ->
             ui.add(help, ui.button("Read the user guide", primary = false) { Links.open(this, guide) }, 4f)
+        }
+        Links.PRIVACY?.let { url ->
+            ui.add(help, ui.button("Privacy policy", primary = false) { Links.open(this, url) }, 8f)
         }
         Links.REPO?.let { repo ->
             ui.add(help, ui.button("Source code on GitHub", primary = false) { Links.open(this, repo) }, 8f)
