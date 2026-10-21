@@ -35,7 +35,8 @@ class MainActivity : Activity() {
     private lateinit var store: SecretStore
     private lateinit var ui: Ui
     private lateinit var web: WebView
-    private lateinit var statusPanel: LinearLayout
+    private lateinit var statusPanel: SplashPanel
+    private lateinit var webHolder: FrameLayout
     private lateinit var statusText: TextView
     private lateinit var retry: Button
     private lateinit var edit: Button
@@ -121,7 +122,7 @@ class MainActivity : Activity() {
                     store.remove(SecretStore.VPN_PENDING)
                     store.remove(SecretStore.VPN_PREV)
                 }
-                runOnUiThread { if (!loaded) loadApp() else { statusPanel.visibility = View.GONE; updateBackHandling() } }
+                runOnUiThread { if (!loaded) loadApp() else setPanelVisible(false) }
             } catch (e: Exception) {
                 Log.w(TAG, "connect failed", e)
                 runOnUiThread { showError(e.message ?: e.toString()) }
@@ -164,8 +165,7 @@ class MainActivity : Activity() {
         val secret = Core.uiBootstrapSecret()
         loaded = true
         pageStarted = false
-        statusPanel.visibility = View.GONE
-        updateBackHandling()
+        setPanelVisible(false)
         web.loadUrl("http://127.0.0.1:$port/__scry/bootstrap?s=$secret")
         // A navigation can occasionally be dropped in a freshly started WebView, which
         // leaves a blank page. If nothing has started shortly, retry with a new secret.
@@ -263,10 +263,11 @@ class MainActivity : Activity() {
             })
         }
 
-        statusText = TextView(this).apply { textSize = ui.sp(18f); gravity = android.view.Gravity.CENTER }
         retry = ui.button("Retry") { onStart() }
-        edit = ui.button("Edit VPN settings", primary = false) {
-            startActivity(Intent(this@MainActivity, SettingsActivity::class.java).putExtra("tab", "vpn"))
+        edit = ui.button("Edit connection settings", primary = false) {
+            // With no VPN there is nothing to fix on the VPN tab; the address lives on the Connection tab.
+            val noVpn = store.get(SecretStore.VPN_CONFIG)?.let { Connector.isNoVpn(it) } == true
+            startActivity(Intent(this@MainActivity, SettingsActivity::class.java).putExtra("tab", if (noVpn) "connection" else "vpn"))
         }
         revert = ui.button("Revert to previous VPN config", primary = false) {
             store.get(SecretStore.VPN_PREV)?.let { store.put(SecretStore.VPN_CONFIG, it) }
@@ -274,40 +275,42 @@ class MainActivity : Activity() {
             store.remove(SecretStore.VPN_PENDING)
             onStart()
         }
+        // The splash: shown while connecting, and with the buttons below it when connecting fails.
+        val splash = SplashPanel(this, ui)
+        statusPanel = splash
+        statusText = splash.status
         val pad = ui.dp(24f)
-        statusPanel = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = android.view.Gravity.CENTER
-            setBackgroundColor(barColor)
-            setPadding(pad, pad, pad, pad)
-            addView(statusText)
-            // Buttons share one width so they line up, and stay readable on a wide screen or a TV.
-            val w = minOf(resources.displayMetrics.widthPixels - 2 * pad, ui.dp(420f))
-            ui.add(this, retry, 20f, w)
-            ui.add(this, edit, 10f, w)
-            ui.add(this, revert, 10f, w)
-            isClickable = true
-        }
+        // Buttons share one width so they line up, and stay readable on a wide screen or a TV.
+        val w = minOf(resources.displayMetrics.widthPixels - 2 * pad, ui.dp(420f))
+        ui.add(splash, retry, 20f, w)
+        ui.add(splash, edit, 10f, w)
+        ui.add(splash, revert, 10f, w)
+
         barColor = getSharedPreferences("ui", MODE_PRIVATE).getInt("bar", Ui.BG)
+        webHolder = FrameLayout(this).apply { addView(web, FrameLayout.LayoutParams(-1, -1)) }
         root = FrameLayout(this)
         setContentView(root.apply {
-            addView(web, FrameLayout.LayoutParams(-1, -1))
-            addView(statusPanel, FrameLayout.LayoutParams(-1, -1))
-            // targetSdk 35 draws edge-to-edge; keep content clear of the status bar,
-            // navigation bar and keyboard so the PWA's top-left menu stays usable.
-            setOnApplyWindowInsetsListener { v, insets ->
+            setBackgroundColor(Ui.BG)
+            addView(webHolder, FrameLayout.LayoutParams(-1, -1))
+            addView(statusPanel, FrameLayout.LayoutParams(-1, -1)) // full screen, over the system bars too
+            // targetSdk 35 draws edge-to-edge. The page keeps clear of the status bar, navigation bar and
+            // keyboard so PhotoPrism's top-left menu stays usable; the splash fills the screen and only
+            // moves its content clear of them.
+            setOnApplyWindowInsetsListener { _, insets ->
+                val l: Int; val t: Int; val r: Int; val b: Int
                 if (android.os.Build.VERSION.SDK_INT >= 30) {
                     val i = insets.getInsets(
                         android.view.WindowInsets.Type.systemBars() or android.view.WindowInsets.Type.ime()
                     )
-                    v.setPadding(i.left, i.top, i.right, i.bottom)
+                    l = i.left; t = i.top; r = i.right; b = i.bottom
                 } else {
                     @Suppress("DEPRECATION")
-                    v.setPadding(
-                        insets.systemWindowInsetLeft, insets.systemWindowInsetTop,
-                        insets.systemWindowInsetRight, insets.systemWindowInsetBottom
-                    )
+                    l = insets.systemWindowInsetLeft; t = insets.systemWindowInsetTop
+                    @Suppress("DEPRECATION")
+                    r = insets.systemWindowInsetRight; b = insets.systemWindowInsetBottom
                 }
+                webHolder.setPadding(l, t, r, b)
+                splash.applyInsets(l, t, r, b)
                 android.view.WindowInsets.CONSUMED
             }
         })
@@ -383,10 +386,9 @@ class MainActivity : Activity() {
     /** Tints the system-bar areas (and connect screen) to the page colour, with legible icons. */
     private fun applyBarColor(c: Int) {
         barColor = c
-        root.setBackgroundColor(c)
-        statusPanel.setBackgroundColor(c)
-        val light = androidx_luminance(c) > 0.5
-        statusText.setTextColor(if (light) Color.BLACK else Color.WHITE)
+        webHolder.setBackgroundColor(c)
+        // While the (dark) splash covers the screen the system-bar icons must be light, whatever the page colour.
+        val light = statusPanel.visibility != View.VISIBLE && androidx_luminance(c) > 0.5
         if (android.os.Build.VERSION.SDK_INT >= 30) {
             val mask = android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
                 android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
@@ -403,9 +405,29 @@ class MainActivity : Activity() {
 
     private fun ui(msg: String) = runOnUiThread { showStatus(msg) }
 
-    private fun showStatus(msg: String) {
-        statusPanel.visibility = View.VISIBLE
+    /** Shows or hides the splash; hiding fades it out so the page appears smoothly. */
+    private fun setPanelVisible(visible: Boolean) {
+        statusPanel.animate().cancel()
+        if (visible) {
+            statusPanel.alpha = 1f
+            statusPanel.visibility = View.VISIBLE
+            panelChanged()
+        } else if (statusPanel.visibility == View.VISIBLE) {
+            statusPanel.animate().alpha(0f).setDuration(250).withEndAction {
+                statusPanel.visibility = View.GONE
+                statusPanel.alpha = 1f
+                panelChanged()
+            }.start()
+        }
+    }
+
+    private fun panelChanged() {
         updateBackHandling()
+        applyBarColor(barColor) // re-picks the system-bar icon colour
+    }
+
+    private fun showStatus(msg: String) {
+        setPanelVisible(true)
         statusText.text = msg
         retry.visibility = View.GONE
         edit.visibility = View.GONE

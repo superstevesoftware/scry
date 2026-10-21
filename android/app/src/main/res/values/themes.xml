@@ -19,6 +19,8 @@
         <item name="android:textColorHint">@color/scry_text_secondary</item>
         <item name="android:statusBarColor">@color/scry_bg</item>
         <item name="android:navigationBarColor">@color/scry_bg</item>
+        <!-- Android 12+: the system's own start-up splash shows the app icon on this dark purple, matching the in-app one. -->
+        <item name="android:windowSplashScreenBackground">@color/scry_splash_window</item>
         <item name="android:alertDialogTheme">@style/Theme.Scry.Dialog</item>
         <item name="android:datePickerDialogTheme">@style/Theme.Scry.Dialog</item>
     </style>

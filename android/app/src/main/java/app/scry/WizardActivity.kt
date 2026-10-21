@@ -65,7 +65,29 @@ class WizardActivity : Activity() {
         super.onCreate(savedInstanceState)
         ui = Ui(this)
         hasExisting = Connector.Target.fromStore(SecretStore(this)) != null
-        setContentView(buildFrame())
+        val fromSettings = intent.getBooleanExtra("from_settings", false)
+        val frame = buildFrame()
+        if (fromSettings || hasExisting) {
+            setContentView(frame)
+        } else {
+            // The very first time the app opens, the splash shows for a moment before the wizard.
+            val splash = SplashPanel(this, ui).apply {
+                status.text = "Welcome"
+                setOnApplyWindowInsetsListener { _, insets ->
+                    val i = insets.getInsets(WindowInsets.Type.systemBars())
+                    applyInsets(i.left, i.top, i.right, i.bottom)
+                    insets
+                }
+            }
+            val holder = FrameLayout(this).apply {
+                addView(frame, FrameLayout.LayoutParams(-1, -1))
+                addView(splash, FrameLayout.LayoutParams(-1, -1))
+            }
+            setContentView(holder)
+            splash.postDelayed({
+                if (!isFinishing) splash.animate().alpha(0f).setDuration(350).withEndAction { holder.removeView(splash) }.start()
+            }, 1400)
+        }
         render()
     }
 

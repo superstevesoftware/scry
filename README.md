@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/images/icon.png" alt="Scry icon" width="140"></p>
+
 # Scry
 
 **Scry is an Android app for viewing your own [PhotoPrism](https://www.photoprism.app/) photo library from anywhere, with its own private connection built in.**
@@ -15,6 +17,7 @@ You install Scry, tell it where your PhotoPrism server is, and your library open
 - **Backs up your phone's photos and videos** to PhotoPrism, on a schedule or on demand, only on Wi-Fi if you like, keeping each photo's location. Backup only ever adds files.
 - **Keeps your secrets safe.** Keys and passwords are encrypted on the phone, never logged, and kept out of Android's cloud backup.
 - **Guides you through setup** with a short wizard in plain language. The screens also work with a remote control, ready for a television version.
+- **Privacy First** Scry does not do any analytics, does not store your data in the cloud, and does not use any ads. Your data is your data.
 
 ## Get started
 

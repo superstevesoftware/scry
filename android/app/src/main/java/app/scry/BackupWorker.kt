@@ -251,7 +251,7 @@ class BackupWorker(private val ctx: Context, params: WorkerParameters) : Worker(
         if (notify && notes.areNotificationsEnabled()) {
             notes.notify(
                 NOTE_DONE,
-                Notification.Builder(ctx, CHANNEL).setSmallIcon(android.R.drawable.stat_sys_upload_done)
+                Notification.Builder(ctx, CHANNEL).setSmallIcon(R.drawable.ic_stat_scry)
                     .setContentTitle("Backup").setContentText(message)
                     .setStyle(Notification.BigTextStyle().bigText(message)).setAutoCancel(true).build()
             )
@@ -260,7 +260,7 @@ class BackupWorker(private val ctx: Context, params: WorkerParameters) : Worker(
     }
 
     private fun foreground(text: String, done: Int, total: Int): ForegroundInfo {
-        val b = Notification.Builder(ctx, CHANNEL).setSmallIcon(android.R.drawable.stat_sys_upload)
+        val b = Notification.Builder(ctx, CHANNEL).setSmallIcon(R.drawable.ic_stat_scry)
             .setContentTitle(text).setOngoing(true).setOnlyAlertOnce(true)
         if (total > 0) b.setContentText("$done of $total").setProgress(total, done, false) else b.setProgress(0, 0, true)
         return if (Build.VERSION.SDK_INT >= 29) ForegroundInfo(NOTE_RUN, b.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)

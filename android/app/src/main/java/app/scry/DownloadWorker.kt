@@ -222,7 +222,7 @@ class DownloadWorker(private val ctx: Context, params: WorkerParameters) : Worke
             return
         }
         val n = Notification.Builder(ctx, CHANNEL)
-            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setSmallIcon(R.drawable.ic_stat_scry)
             .setContentTitle("Download complete")
             .setContentText(text)
             .setAutoCancel(true)
@@ -233,7 +233,7 @@ class DownloadWorker(private val ctx: Context, params: WorkerParameters) : Worke
     private fun fail(name: String, why: String, retry: Boolean): Result {
         if (retry) return Result.retry()
         val n = Notification.Builder(ctx, CHANNEL)
-            .setSmallIcon(android.R.drawable.stat_notify_error)
+            .setSmallIcon(R.drawable.ic_stat_scry)
             .setContentTitle("Download failed")
             .setContentText("$name: $why")
             .setStyle(Notification.BigTextStyle().bigText("$name: $why"))
@@ -245,7 +245,7 @@ class DownloadWorker(private val ctx: Context, params: WorkerParameters) : Worke
 
     private fun foreground(noteId: Int, name: String, percent: Int): ForegroundInfo {
         val b = Notification.Builder(ctx, CHANNEL)
-            .setSmallIcon(android.R.drawable.stat_sys_download)
+            .setSmallIcon(R.drawable.ic_stat_scry)
             .setContentTitle("Downloading")
             .setContentText(name)
             .setOngoing(true)
@@ -272,7 +272,7 @@ class DownloadWorker(private val ctx: Context, params: WorkerParameters) : Worke
         val view = Intent(Intent.ACTION_VIEW).setDataAndType(uri, mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         val pi = PendingIntent.getActivity(ctx, noteId, view, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val n = Notification.Builder(ctx, CHANNEL)
-            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setSmallIcon(R.drawable.ic_stat_scry)
             .setContentTitle("Download complete")
             .setContentText(name)
             .setContentIntent(pi)

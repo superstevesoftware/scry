@@ -50,7 +50,7 @@ object BackupTip {
         notes.notify(
             NOTE_ID,
             Notification.Builder(ctx, CHANNEL)
-                .setSmallIcon(android.R.drawable.stat_sys_upload)
+                .setSmallIcon(R.drawable.ic_stat_scry)
                 .setContentTitle("Back up your photos")
                 .setContentText("Tap to see how to send this phone's photos to PhotoPrism.")
                 .setContentIntent(open)

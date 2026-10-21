@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From the splash design: a purple radial gradient from the top colour (centre) to the bottom colour. -->
+    <color name="scry_splash_top">#18102A</color>
+    <color name="scry_splash_bottom">#010002</color>
+    <color name="scry_splash_window">#030109</color>
+</resources>
